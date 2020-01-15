@@ -34,10 +34,9 @@ eliminateLiteral (var, parity) (clause:formula) = case clause of
 -- Given a variable, we consider both the case where we assume it is true, and
 -- the case where we assume it is false.
 splitOnVariable :: Var -> Formula -> [Formula]
-splitOnVariable variable formula = do
-  positiveElimination <- eliminateLiteral (variable, True) formula
-  negativeElimination <- eliminateLiteral (variable, False) formula
-  [positiveElimination, negativeElimination]
+splitOnVariable variable formula =
+  eliminateLiteral (variable, True) formula ++
+  eliminateLiteral (variable, False) formula
 
 -- Given a formula, reduce it as far as we can by:
 -- * finding and eliminating clauses consisting of a single literal
