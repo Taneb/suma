@@ -2,6 +2,7 @@ module Main where
 
 import Control.Monad
 import Data.Maybe
+import qualified Data.IntMap as M
 import Test.QuickCheck
 import Test.Hspec
 
@@ -31,8 +32,26 @@ genSatisfiableFormula = do
 satSatisfiable :: Property
 satSatisfiable = forAll genSatisfiableFormula (isJust . sat)
 
+-- generate some formula. We don't care whether it's satisfiable
+genFormula :: Gen Formula
+genFormula = do
+  nVars <- arbitrarySizedNatural `suchThat` (> 0)
+  nClauses <- arbitrarySizedNatural `suchThat` (> 0)
+  replicateM nClauses $ do
+    nLit <- scale (\n -> round (sqrt (fromIntegral n))) arbitrarySizedNatural
+    replicateM nLit $ (,) <$> choose (0, nVars - 1) <*> arbitraryBoundedEnum
+
+satValid :: Property
+satValid = forAll genFormula (\formula -> maybe True (satisfies formula) $ sat formula)
+  where
+    satisfies :: Formula -> Assignment -> Bool
+    satisfies formula assignment
+      = all (or . catMaybes . map (\(v, p) -> fmap (== p) $ M.lookup v assignment)) formula
+
 main :: IO ()
 main = hspec $ do
   describe "sat" $ do
     it "Satisfiable formulas are satisfiable" $
       property satSatisfiable
+    it "The assignments we generate satisfy their formulas" $
+      property satValid

@@ -38,6 +38,7 @@ test-suite test
   main-is: Test.hs
   build-depends:    base >=4.12 && <4.13
                   , suma
+                  , containers
                   , hspec
                   , QuickCheck
   hs-source-dirs: test
