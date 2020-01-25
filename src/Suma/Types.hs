@@ -1,5 +1,7 @@
 module Suma.Types where
 
+import Data.IntMap.Strict (IntMap)
+
 -- Throughout we use [] as both a container and a non-determinism monad.
 
 -- A variable, e.g. p, q, r...
@@ -12,4 +14,5 @@ type Literal = (Int, Bool)
 type Clause = [Literal]
 -- A sequence of clauses, which are combined by &&
 type Formula = [Clause]
-
+-- A mapping from variable to the truth value it has been assigned
+type Assignment = IntMap Bool -- ~ Map Var Bool ~ Var -> Maybe Bool
