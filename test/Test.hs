@@ -1,6 +1,7 @@
 module Main where
 
 import Control.Monad
+import Data.Maybe
 import Test.QuickCheck
 import Test.Hspec
 
@@ -28,7 +29,7 @@ genSatisfiableFormula = do
     pure $ pre ++ [var] ++ post
 
 satSatisfiable :: Property
-satSatisfiable = forAll genSatisfiableFormula sat
+satSatisfiable = forAll genSatisfiableFormula (isJust . sat)
 
 main :: IO ()
 main = hspec $ do

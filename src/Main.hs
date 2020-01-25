@@ -15,5 +15,8 @@ main = do
       case parseDimacsCnf dimacsText of
         Nothing -> do
           die "Failed to parse DIMACS file"
-        Just formula ->
-          putStrLn $ if sat formula then "SAT" else "UNSAT"
+        Just formula -> case sat formula of
+          Nothing -> putStrLn "UNSAT"
+          Just assignment -> do
+            putStrLn "SAT"
+            print assignment

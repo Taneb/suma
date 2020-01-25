@@ -3,6 +3,7 @@ module Suma where
 import Control.Monad
 import Data.Foldable
 import qualified Data.IntMap.Strict as M
+import Data.Maybe
 
 import Suma.Types
 
@@ -93,6 +94,7 @@ solve formula assignment =
       Left (Just var) -> splitOnVariable formula var assignment >>= solve formula
 
 -- Determine whether a formula is satisfiable. This happens when 'solve'
--- returns a non-empty list.
-sat :: Formula -> Bool
-sat = not . null . flip solve M.empty
+-- returns a non-empty list. We also return an assignment that satisfies the
+-- formula if one exists.
+sat :: Formula -> Maybe Assignment
+sat = listToMaybe . flip solve M.empty
