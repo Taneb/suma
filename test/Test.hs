@@ -5,6 +5,7 @@ import Test.QuickCheck
 import Test.Hspec
 
 import Suma
+import Suma.Types
 
 -- generate known-to-be-satisfiable formulas by coming up with an assignment of
 -- variables and putting one of the variables from that assignment in each

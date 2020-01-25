@@ -18,7 +18,10 @@ extra-source-files:  CHANGELOG.md
 
 library
   exposed-modules:     Suma
+                     , Suma.Types
+                     , Dimacs
   build-depends:       base >=4.12 && <4.13
+                     , megaparsec
   hs-source-dirs:      src
   default-language:    Haskell2010
 
