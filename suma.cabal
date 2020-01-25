@@ -25,6 +25,12 @@ library
   hs-source-dirs:      src
   default-language:    Haskell2010
 
+executable suma
+  build-depends:       base >=4.12 && <4.13
+                     , suma
+                     , text
+  main-is:             src/Main.hs
+
 test-suite test
   type: exitcode-stdio-1.0
   main-is: Test.hs
