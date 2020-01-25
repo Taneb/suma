@@ -24,7 +24,7 @@ findOneLiteralClauses formula assignment = do
       Just q | p == q -> Nothing
              | otherwise -> Just lits
 
--- Check that the formula is still conistent with the current assignment of
+-- Check that the formula is still consistent with the current assignment of
 -- values to variables. That is to say, all clauses still could be true in some
 -- refinement of the current assignment.
 checkConsistent :: Formula -> Assignment -> Bool
@@ -45,6 +45,16 @@ splitOnVariable formula variable assignment = do
 -- Determine whether the assignment is a witness that the formula is
 -- satisfiable or is inconsistent with the formula. If it is neither, return an
 -- unknown variable which could give us more information.
+--
+-- The return type here is chosen specifically to take advantage of
+-- short-circuiting in the Either monad instance.
+--
+-- Left Nothing means we have found a contradiction. We abort this branch of
+-- the computation.
+-- Left (Just v) means we have found a clause which is not determined yet. We
+-- can then split on the variable v.
+-- Right () means the formula is fully determined and satisdied. We can
+-- terminate.
 evaluateFormula :: Formula -> Assignment -> Either (Maybe Var) ()
 evaluateFormula formula assignment = mapM_ f formula
   where
