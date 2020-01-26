@@ -1,5 +1,6 @@
 module Suma where
 
+import Control.Applicative
 import Control.Monad
 import Data.Foldable
 import qualified Data.IntMap.Strict as M
@@ -36,12 +37,15 @@ checkConsistent formula assignment = all checkConsistent' formula
 
 -- Given a variable, we consider both the case where we assume it is true, and
 -- the case where we assume it is false.
-splitOnVariable :: Formula -> Var -> Assignment -> [Assignment]
-splitOnVariable formula variable assignment = do
-  value <- [False, True]
-  let assignment' = M.insert variable value assignment
-  guard $ checkConsistent formula assignment'
-  pure assignment'
+splitOnVariable :: Formula -> Var -> Assignment -> Maybe Assignment
+splitOnVariable formula variable assignment = branchOn True <|> branchOn False
+  where
+    branchOn :: Bool -> Maybe Assignment
+    branchOn value =
+      do
+        let assignment' = M.insert variable value assignment
+        guard $ checkConsistent formula assignment'
+        solve formula assignment'
 
 -- Determine whether the assignment is a witness that the formula is
 -- satisfiable or is inconsistent with the formula. If it is neither, return an
@@ -80,7 +84,7 @@ evaluateFormula formula assignment = mapM_ f formula
 -- This is approximately the DPLL algorithm, with the infelicity that we skip
 -- the second rule ("pure" variables) as it is implied by the third rule and is
 -- somewhat difficult to determine if it is an option.
-solve :: Formula -> Assignment -> [Assignment]
+solve :: Formula -> Assignment -> Maybe Assignment
 solve formula assignment =
   case findOneLiteralClauses formula assignment of
     (literal:_) -> do
@@ -89,12 +93,12 @@ solve formula assignment =
       solve formula assignment'
     [] -> case evaluateFormula formula assignment of
       Right () -> pure assignment -- we're done!
-      Left Nothing -> [] -- no solution
+      Left Nothing -> empty -- no solution
       -- split on some unassigned variable
-      Left (Just var) -> splitOnVariable formula var assignment >>= solve formula
+      Left (Just var) -> splitOnVariable formula var assignment
 
 -- Determine whether a formula is satisfiable. This happens when 'solve'
 -- returns a non-empty list. We also return an assignment that satisfies the
 -- formula if one exists.
 sat :: Formula -> Maybe Assignment
-sat = listToMaybe . flip solve M.empty
+sat = flip solve M.empty
