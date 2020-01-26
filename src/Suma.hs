@@ -4,6 +4,7 @@ import Control.Monad
 import Data.Foldable
 import qualified Data.IntMap.Strict as M
 import Data.Maybe
+import qualified Data.IntSet as S
 
 import Suma.Types
 
@@ -92,6 +93,16 @@ solve formula assignment =
       Left Nothing -> [] -- no solution
       -- split on some unassigned variable
       Left (Just var) -> splitOnVariable formula var assignment >>= solve formula
+
+makeOccurrenceLists :: Formula -> OccurrenceLists
+makeOccurrenceLists = foldr insertVars M.empty . zip [0..]
+  where
+    insertVars :: (Int, Clause) -> OccurrenceLists -> OccurrenceLists
+    insertVars (i, clause) occLists = foldr (insertVar i) occLists clause
+
+    -- i is the index of the clause
+    insertVar :: Int -> (Var, Parity) -> OccurrenceLists -> OccurrenceLists
+    insertVar i (var, _p) = M.insertWith S.union var (S.singleton i)
 
 -- Determine whether a formula is satisfiable. This happens when 'solve'
 -- returns a non-empty list. We also return an assignment that satisfies the

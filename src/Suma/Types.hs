@@ -1,6 +1,7 @@
 module Suma.Types where
 
 import Data.IntMap.Strict (IntMap)
+import Data.IntSet (IntSet)
 
 -- Throughout we use [] as both a container and a non-determinism monad.
 
@@ -16,3 +17,5 @@ type Clause = [Literal]
 type Formula = [Clause]
 -- A mapping from variable to the truth value it has been assigned
 type Assignment = IntMap Bool -- ~ Map Var Bool ~ Var -> Maybe Bool
+-- A mapping from variable to the set of (indices of) clauses that contain it
+type OccurrenceLists = IntMap IntSet
