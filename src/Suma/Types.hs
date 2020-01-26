@@ -19,3 +19,5 @@ type Formula = [Clause]
 type Assignment = IntMap Bool -- ~ Map Var Bool ~ Var -> Maybe Bool
 -- A mapping from variable to the set of (indices of) clauses that contain it
 type OccurrenceLists = IntMap IntSet
+-- A set of clauses with 1 unassigned literal
+type Readys = IntMap Literal

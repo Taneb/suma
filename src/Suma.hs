@@ -8,23 +8,10 @@ import qualified Data.IntSet as S
 
 import Suma.Types
 
--- Find all clauses which consist of a single literal.
-findOneLiteralClauses :: Formula -> Assignment -> [Literal]
-findOneLiteralClauses formula assignment = do
-  clause <- formula
-  -- if anything has been assigned correctly in the clause then the clause is
-  -- no longer active
-  --
-  -- otherwise we want all but one of the literals to be assigned incorrectly
-  Just [literal] <- pure $ foldrM f [] clause
-
-  pure literal
-  where
-    f :: Literal -> [Literal] -> Maybe [Literal]
-    f (var, p) lits = case M.lookup var assignment of
-      Nothing -> Just $ (var, p):lits
-      Just q | p == q -> Nothing
-             | otherwise -> Just lits
+-- Find some clause which consists of a single literal, and return its index
+-- and the single literal's variable
+findOneLiteralClause :: Readys -> Maybe ((Int, Literal), Readys)
+findOneLiteralClause = M.minViewWithKey
 
 -- Check that the formula is still consistent with the current assignment of
 -- values to variables. That is to say, all clauses still could be true in some
@@ -81,18 +68,63 @@ evaluateFormula formula assignment = mapM_ f formula
 -- This is approximately the DPLL algorithm, with the infelicity that we skip
 -- the second rule ("pure" variables) as it is implied by the third rule and is
 -- somewhat difficult to determine if it is an option.
-solve :: Formula -> Assignment -> [Assignment]
-solve formula assignment =
-  case findOneLiteralClauses formula assignment of
-    (literal:_) -> do
-      let assignment' = uncurry M.insert literal assignment
+solve :: Formula -> Readys -> OccurrenceLists -> Assignment -> [Assignment]
+solve formula readys occLists assignment =
+  case findOneLiteralClause readys of
+    Just ((clauseIndex, lit), readys') -> do
+      -- let assignment' = uncurry M.insert literal assignment
+      (occLists', assignment') <- maybeToList $ assign lit formula readys' occLists assignment
       guard $ checkConsistent formula assignment'
-      solve formula assignment'
-    [] -> case evaluateFormula formula assignment of
+      solve formula readys' occLists' assignment'
+    Nothing -> case evaluateFormula formula assignment of
       Right () -> pure assignment -- we're done!
       Left Nothing -> [] -- no solution
       -- split on some unassigned variable
-      Left (Just var) -> splitOnVariable formula var assignment >>= solve formula
+      Left (Just var) -> splitOnVariable formula var assignment >>= solve formula readys occLists
+
+data ClauseStatus
+  = CTrue
+  | CUnready
+  | CReady
+  | CFalse
+
+assign
+  :: Literal
+  -> Formula
+  -> Readys
+  -> OccurrenceLists
+  -> Assignment
+  -> Maybe (OccurrenceLists, Assignment)
+assign lit@(var, p) formula readys occLists assignment = do
+  let assignment' = uncurry M.insert lit assignment
+  let occList = fromJust $ M.lookup var occLists
+  -- For each clause (index) in occList:
+  --   If assigning lit to true makes the clause true
+  --     Remove the clause from all occurrence lists
+  --     (The clause may have been in readys, so this needs to be accounted for at some point)
+  --   Else if assigning lit to true makes the clause have 2 or more unassigned literals
+  --     (Do nothing)
+  --   Else if assigning lit to true makes the clause have a single unassigned literal
+  --     Add the clause to readys
+  --   Else (if assigning lit to true makes the clause have no unassigned literals)
+  --     Fail
+  -- Remove occList from occLists
+  (readys', occLists') <- foldlM (updateState assignment') (readys, occLists) occList
+  (occLists, assignment')
+
+  where
+    updateState :: Assignment -> Int -> (Readys, OccurrenceLists) -> Maybe (Readys, OccurrenceLists)
+    updateState assignment' i (readys, occLists) =
+      case evaluateClause (formula !! i) assignment' of
+        CTrue ->
+          let occLists' = M.map (S.delete i) occLists in
+          let readys' = M.delete i readys in
+          Just (readys', occLists')
+        CUnready ->
+          Just (readys, occLists)
+        CReady ->
+          Just (M.insert i readys, occLists)
+        CFalse -> Nothing
 
 makeOccurrenceLists :: Formula -> OccurrenceLists
 makeOccurrenceLists = foldr insertVars M.empty . zip [0..]
