@@ -38,7 +38,7 @@ genFormula = do
   nVars <- arbitrarySizedNatural `suchThat` (> 0)
   nClauses <- arbitrarySizedNatural `suchThat` (> 0)
   replicateM nClauses $ do
-    nLit <- scale (\n -> round (sqrt (fromIntegral n))) arbitrarySizedNatural
+    nLit <- scale (round . sqrt . fromIntegral) arbitrarySizedNatural
     replicateM nLit $ (,) <$> choose (0, nVars - 1) <*> arbitraryBoundedEnum
 
 satValid :: Property
@@ -46,10 +46,10 @@ satValid = forAll genFormula (\formula -> maybe True (satisfies formula) $ sat f
   where
     satisfies :: Formula -> Assignment -> Bool
     satisfies formula assignment
-      = all (or . catMaybes . map (\(v, p) -> fmap (== p) $ M.lookup v assignment)) formula
+      = all (or . mapMaybe (\(v, p) -> (== p) <$> M.lookup v assignment)) formula
 
 main :: IO ()
-main = hspec $ do
+main = hspec $
   describe "sat" $ do
     it "Satisfiable formulas are satisfiable" $
       property satSatisfiable
