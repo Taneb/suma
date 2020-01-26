@@ -7,7 +7,7 @@ import System.FilePath
 
 import Dimacs (parseDimacsCnf)
 import Suma.Types (Formula)
-import Suma (solve)
+import Suma (sat)
 
 import Paths_suma (getDataFileName)
 
@@ -16,7 +16,7 @@ blocksworldDir = "examples" </> "blocksworld"
 
 blocksworldBenchmark :: String -> Benchmark
 blocksworldBenchmark name =
-  env setup $ \formula -> bench name $ whnf solve formula
+  env setup $ \formula -> bench name $ whnf sat formula
   where
     setup :: IO Formula
     setup = do
