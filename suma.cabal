@@ -15,6 +15,7 @@ maintainer:          nvd1234@gmail.com
 -- category:
 build-type:          Simple
 extra-source-files:  CHANGELOG.md
+data-files:          examples/blocksworld/*.cnf
 
 library
   exposed-modules:     Suma
@@ -39,3 +40,14 @@ test-suite test
                   , hspec
                   , QuickCheck
   hs-source-dirs: test
+
+benchmark bench
+  type: exitcode-stdio-1.0
+  main-is: Bench.hs
+  build-depends: base >=4.12 && <4.13
+               , criterion
+               , filepath
+               , suma
+               , text
+  other-modules: Paths_suma
+  hs-source-dirs: bench
