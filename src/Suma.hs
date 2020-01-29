@@ -60,8 +60,8 @@ splitOnVariable variable assignment formula = branchOn True <|> branchOn False
 -- can then split on the variable v.
 -- Right () means the formula is fully determined and satisdied. We can
 -- terminate.
-evaluateFormula :: Formula -> Assignment -> Either (Maybe Var) ()
-evaluateFormula formula assignment = mapM_ f formula
+evaluateFormula :: Assignment -> Formula -> Either (Maybe Var) ()
+evaluateFormula assignment = mapM_ f
   where
     f :: Clause -> Either (Maybe Var) ()
     f [] = Left Nothing -- not satisfied and no unknowns
@@ -91,7 +91,7 @@ solve formula assignment =
       let assignment' = uncurry M.insert literal assignment
       guard $ checkConsistent assignment' formula
       solve formula assignment'
-    [] -> case evaluateFormula formula assignment of
+    [] -> case evaluateFormula assignment formula of
       Right () -> pure assignment -- we're done!
       Left Nothing -> empty -- no solution
       -- split on some unassigned variable
