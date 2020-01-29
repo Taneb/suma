@@ -37,8 +37,8 @@ checkConsistent assignment = all checkConsistent'
 
 -- Given a variable, we consider both the case where we assume it is true, and
 -- the case where we assume it is false.
-splitOnVariable :: Formula -> Var -> Assignment -> Maybe Assignment
-splitOnVariable formula variable assignment = branchOn True <|> branchOn False
+splitOnVariable :: Var -> Assignment -> Formula -> Maybe Assignment
+splitOnVariable variable assignment formula = branchOn True <|> branchOn False
   where
     branchOn :: Bool -> Maybe Assignment
     branchOn value =
@@ -95,7 +95,7 @@ solve formula assignment =
       Right () -> pure assignment -- we're done!
       Left Nothing -> empty -- no solution
       -- split on some unassigned variable
-      Left (Just var) -> splitOnVariable formula var assignment
+      Left (Just var) -> splitOnVariable var assignment formula
 
 -- Determine whether a formula is satisfiable. This happens when 'solve'
 -- returns a non-empty list. We also return an assignment that satisfies the
