@@ -9,8 +9,8 @@ import Data.Maybe
 import Suma.Types
 
 -- Find all clauses which consist of a single literal.
-findOneLiteralClauses :: Formula -> Assignment -> [Literal]
-findOneLiteralClauses formula assignment = do
+findOneLiteralClauses :: Assignment -> Formula -> [Literal]
+findOneLiteralClauses assignment formula = do
   clause <- formula
   -- if anything has been assigned correctly in the clause then the clause is
   -- no longer active
@@ -86,7 +86,7 @@ evaluateFormula formula assignment = mapM_ f formula
 -- somewhat difficult to determine if it is an option.
 solve :: Formula -> Assignment -> Maybe Assignment
 solve formula assignment =
-  case findOneLiteralClauses formula assignment of
+  case findOneLiteralClauses assignment formula of
     (literal:_) -> do
       let assignment' = uncurry M.insert literal assignment
       guard $ checkConsistent formula assignment'
