@@ -29,8 +29,8 @@ findOneLiteralClauses assignment formula = do
 -- Check that the formula is still consistent with the current assignment of
 -- values to variables. That is to say, all clauses still could be true in some
 -- refinement of the current assignment.
-checkConsistent :: Formula -> Assignment -> Bool
-checkConsistent formula assignment = all checkConsistent' formula
+checkConsistent :: Assignment -> Formula -> Bool
+checkConsistent assignment = all checkConsistent'
   where
     checkConsistent' :: Clause -> Bool
     checkConsistent' = any $ \(var,p) -> M.lookup var assignment /= Just (not p)
@@ -44,7 +44,7 @@ splitOnVariable formula variable assignment = branchOn True <|> branchOn False
     branchOn value =
       do
         let assignment' = M.insert variable value assignment
-        guard $ checkConsistent formula assignment'
+        guard $ checkConsistent assignment' formula
         solve formula assignment'
 
 -- Determine whether the assignment is a witness that the formula is
@@ -89,7 +89,7 @@ solve formula assignment =
   case findOneLiteralClauses assignment formula of
     (literal:_) -> do
       let assignment' = uncurry M.insert literal assignment
-      guard $ checkConsistent formula assignment'
+      guard $ checkConsistent assignment' formula
       solve formula assignment'
     [] -> case evaluateFormula formula assignment of
       Right () -> pure assignment -- we're done!
