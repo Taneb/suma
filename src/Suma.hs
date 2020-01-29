@@ -5,13 +5,14 @@ import Control.Monad
 import Data.Foldable
 import qualified Data.IntMap.Strict as M
 import Data.Maybe
+import qualified Data.Vector as V
 
 import Suma.Types
 
 -- Find all clauses which consist of a single literal.
 findOneLiteralClauses :: Assignment -> Formula -> [Literal]
 findOneLiteralClauses assignment formula = do
-  clause <- formula
+  clause <- V.toList formula
   -- if anything has been assigned correctly in the clause then the clause is
   -- no longer active
   --

@@ -6,6 +6,7 @@ import Data.Char
 import Data.List
 import Data.Text (Text)
 import qualified Data.Text as T
+import qualified Data.Vector as V
 
 import Suma.Types
 
@@ -25,9 +26,9 @@ parseDimacsCnf = go . T.lines
       Just () -> go ls
 
     go2 :: [Text] -> Maybe Formula
-    go2 [] = Just []
+    go2 [] = Just V.empty
     go2 (l:ls) = case comment l of
-      Nothing -> (:) <$> clause l <*> go2 ls
+      Nothing -> V.cons <$> clause l <*> go2 ls
       Just () -> go2 ls
 
     int :: Text -> Maybe Int

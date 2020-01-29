@@ -3,6 +3,7 @@ module Main where
 import Control.Monad
 import Data.Maybe
 import qualified Data.IntMap as M
+import qualified Data.Vector as V
 import Test.QuickCheck
 import Test.Hspec
 
@@ -17,7 +18,7 @@ genSatisfiableFormula = do
   nVars <- arbitrarySizedNatural `suchThat` (> 0)
   assignments <- zip [0..] <$> replicateM nVars arbitraryBoundedEnum
   nClauses <- arbitrarySizedNatural `suchThat` (> 0)
-  replicateM nClauses $ do
+  fmap V.fromList . replicateM nClauses $ do
     nPre <- scale (\n -> round (sqrt (fromIntegral n) / 2))
       arbitrarySizedNatural
     pre  <- replicateM nPre $
@@ -37,7 +38,7 @@ genFormula :: Gen Formula
 genFormula = do
   nVars <- arbitrarySizedNatural `suchThat` (> 0)
   nClauses <- arbitrarySizedNatural `suchThat` (> 0)
-  replicateM nClauses $ do
+  fmap V.fromList . replicateM nClauses $ do
     nLit <- scale (round . sqrt . fromIntegral) arbitrarySizedNatural
     replicateM nLit $ (,) <$> choose (0, nVars - 1) <*> arbitraryBoundedEnum
 
