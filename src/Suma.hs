@@ -45,7 +45,7 @@ splitOnVariable variable assignment formula = branchOn True <|> branchOn False
       do
         let assignment' = M.insert variable value assignment
         guard $ checkConsistent assignment' formula
-        solve formula assignment'
+        solve assignment' formula
 
 -- Determine whether the assignment is a witness that the formula is
 -- satisfiable or is inconsistent with the formula. If it is neither, return an
@@ -84,13 +84,13 @@ evaluateFormula assignment = mapM_ f
 -- This is approximately the DPLL algorithm, with the infelicity that we skip
 -- the second rule ("pure" variables) as it is implied by the third rule and is
 -- somewhat difficult to determine if it is an option.
-solve :: Formula -> Assignment -> Maybe Assignment
-solve formula assignment =
+solve :: Assignment -> Formula -> Maybe Assignment
+solve assignment formula =
   case findOneLiteralClauses assignment formula of
     (literal:_) -> do
       let assignment' = uncurry M.insert literal assignment
       guard $ checkConsistent assignment' formula
-      solve formula assignment'
+      solve assignment' formula
     [] -> case evaluateFormula assignment formula of
       Right () -> pure assignment -- we're done!
       Left Nothing -> empty -- no solution
@@ -101,4 +101,4 @@ solve formula assignment =
 -- returns a non-empty list. We also return an assignment that satisfies the
 -- formula if one exists.
 sat :: Formula -> Maybe Assignment
-sat = flip solve M.empty
+sat = solve M.empty
